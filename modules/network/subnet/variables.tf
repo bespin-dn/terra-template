@@ -1,4 +1,4 @@
-variable "cidr_blokc" {
+variable "cidr_block" {
     type = string
 }
 

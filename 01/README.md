@@ -2,7 +2,7 @@
 =============
 ![Alt text](./01.png)
 
-생성되는 리소스
+Resource
 -----
 * VPC, Subnet, Route Table
 * IGW, NGW
@@ -21,10 +21,8 @@ AWS Secret Access Key [None]:
 Default region name [None]:
 Default output format [None]:
 ```
-Enviroment
-----
-* EC2
-
+### 2. SSH Key 생성
+SSH 접속을 위한 Public/Private Key를 AWS 콘솔에서 생성.
 
 Usage
 -----
@@ -40,6 +38,8 @@ context = {
 }
 
 vpc_cide = "10.10"
+instance_type = <Web Instance Type>
+key_name = <Key Pair 이름>
 ```
 
 ### 2. Run Command
