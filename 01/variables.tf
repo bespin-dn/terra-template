@@ -3,7 +3,9 @@ variable "context" {
     aws_credentials_file = string
     aws_region = string
     aws_profile = string
+    
     project = string
+    env = string
   })
 }
 

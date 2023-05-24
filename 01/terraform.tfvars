@@ -1,5 +1,5 @@
 context = {
-    aws_credential_file = "../aws.cred"
+    aws_credentials_file = "../aws.cred"
     aws_region = "ap-southeast-2"
     aws_profile = "default"
 

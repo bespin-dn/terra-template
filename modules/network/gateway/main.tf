@@ -9,7 +9,7 @@ resource "aws_eip" "aws_ngw_eip" {
 }
 
 resource "aws_nat_gateway" "aws_ngw" {
-  allocation_id = var.public_subnet.id
+  allocation_id = var.public_subnet_id
   subnet_id = aws_eip.aws_ngw_eip.id
 
   tags = var.tag_name

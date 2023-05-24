@@ -63,7 +63,7 @@ module "aws_private_subnet_c" {
 module "aws_gateway" {
   source = "../modules/network/gateway"
   vpc_id = module.aws_vpc.vpc_id
-  public_subnet = module.aws_public_subnet_a.id
+  public_subnet_id = module.aws_public_subnet_a.subnet_id
   tag_name = {
     Name = "${var.context.project}-IGW"
     ENV = "${var.context.env}"
