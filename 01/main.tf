@@ -67,4 +67,5 @@ module "aws_gateway" {
   tag_name = {
     Name = "${var.context.project}-IGW"
     ENV = "${var.context.env}"
+  }
 }
