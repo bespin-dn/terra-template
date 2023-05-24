@@ -69,3 +69,11 @@ module "aws_gateway" {
     ENV = "${var.context.env}"
   }
 }
+
+## Routing 정책 + Attach
+
+## EC2
+
+## Security Group
+
+## ELB
