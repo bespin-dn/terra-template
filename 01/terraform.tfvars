@@ -4,7 +4,8 @@ context = {
     aws_profile = "default"
 
     project = "template-01"
-    env = "Dev by Terraform"
+    env = "Dev"
+    distributor = "Terraform"
 }
 
 vpc_cidr = "10.10"

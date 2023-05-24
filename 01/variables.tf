@@ -6,6 +6,7 @@ variable "context" {
     
     project = string
     env = string
+    distributor = string
   })
 }
 
