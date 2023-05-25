@@ -8,6 +8,7 @@ module "aws_vpc" {
   tag_name = {
     Name = "${var.context.project}-VPC"
     ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
   }
 }
 
@@ -21,6 +22,7 @@ module "aws_public_subnet_a" {
   tag_name = {
     Name = "${var.context.project}-PUB-A"
     ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
   }
 }
 module "aws_public_subnet_c" {
@@ -32,6 +34,7 @@ module "aws_public_subnet_c" {
   tag_name = {
     Name = "${var.context.project}-PUB-C"
     ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
   }
 }
 
@@ -45,6 +48,7 @@ module "aws_private_subnet_a" {
   tag_name = {
     Name = "${var.context.project}-PRI-A"
     ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
   }
 }
 module "aws_private_subnet_c" {
@@ -56,6 +60,7 @@ module "aws_private_subnet_c" {
   tag_name = {
     Name = "${var.context.project}-PRI-C"
     ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
   }
 }
 
@@ -67,13 +72,82 @@ module "aws_gateway" {
   tag_name = {
     Name = "${var.context.project}-IGW"
     ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
   }
 }
 
 ## Routing 정책 + Attach
+resource "aws_route_table" "public_route" {
+  vpc_id = module.aws_vpc.vpc_id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = module.aws_gateway.igw_id
+  }
+  tags = {
+    Name = "${var.context.project}-PUB-RT"
+    ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
+  }
+}
+resource "aws_route_table" "private_route" {
+  vpc_id = module.aws_vpc.vpc_id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = module.aws_gateway.ngw_id
+  }
+  tags = {
+    Name = "${var.context.project}-PRI-RT"
+    ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
+  }
+}
+resource "aws_route_table_association" "to-public-a" {
+  subnet_id = module.aws_public_subnet_a.subnet_id
+  route_table_id = aws_route_table.public_route.id
+}
+resource "aws_route_table_association" "to-public-c" {
+  subnet_id = module.aws_public_subnet_c.subnet_id
+  route_table_id = aws_route_table.public_route.id
+}
+resource "aws_route_table_association" "to-private-a" {
+  subnet_id = module.aws_private_subnet_a.subnet_id
+  route_table_id = aws_route_table.private_route.id
+}
+resource "aws_route_table_association" "to-private-c" {
+  subnet_id = module.aws_private_subnet_c.subnet_id
+  route_table_id = aws_route_table.private_route.id
+}
 
 ## EC2
+# Bastion Host
+module "aws_ec2_bastion" {
+  source = "../terraform/module/compute/ec2_bastion"
+  ## <---여기부터 시작---> 
+}
 
 ## Security Group
-
+module "aws_security_group_ssh" {
+  source = "../modules/sercurity_group"
+  vpc_id = module.aws_vpc.vpc_id
+  cidr_blocks = ["165.225.228.0/23"]
+  from_port = 22
+  to_port = 22
+  tag_name = {
+    Name = "${var.context.project}-SSH-SG"
+    ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
+  }
+}
+module "aws_security_group_http" {
+  source = "../modules/sercurity_group"
+  vpc_id = module.aws_vpc.vpc_id
+  cidr_blocks = ["0.0.0.0/0"]
+  from_port = 80
+  to_port = 80
+  tag_name = {
+    Name = "${var.context.project}-HTTP-SG"
+    ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
+  }
+}
 ## ELB
