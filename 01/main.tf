@@ -122,7 +122,7 @@ resource "aws_route_table_association" "to-private-c" {
 # Bastion Host
 module "aws_ec2_bastion" {
   source = "../modules/compute/ec2_bastion"
-  ami_id = data.aws_ami.amzn2_ami
+  ami_id = data.aws_ami.amzn2_ami.id
   sg_groups = [module.aws_security_group_ssh.security_group_id]
   subnet_id = module.aws_public_subnet_a.subnet_id
   key_name = var.key_name
@@ -133,24 +133,59 @@ module "aws_ec2_bastion" {
     Distributor = "${var.context.distributor}"
   }
 }
-module "aws_ec2_web" {
+module "aws_ec2_web_a" {
   source = "../modules/compute/ec2_private"
-  instance_count = 2
+  instance_count = 1
   instance_type = var.instance_type
-  ami_id = data.aws_ami.amzn2_ami
-  sg_groups = [module.aws_security_group_bastion_source.security_group_id]
+  ami_id = data.aws_ami.amzn2_ami.id
+  sg_groups = [module.aws_security_group_internal_vpc.security_group_id, module.aws_security_group_http.security_group_id]
   subnet_id = module.aws_private_subnet_a.subnet_id
   key_name = var.key_name
+
+  user_data = <<EOF
+    #!/bin/bash
+    echo "Inatall Nginx"
+    sudo amazon-linux-extras install nginx1
+
+    echo "Enable Systemctl"
+    sudo systemctl enable nginx
+    sudo systemctl start nginx
+  EOF
+
   tag_name = {
     Name = "${var.context.project}-Web"
     ENV = "${var.context.env}"
     Distributor = "${var.context.distributor}"
   }
 }
+module "aws_ec2_web_c" {
+  source = "../modules/compute/ec2_private"
+  instance_count = 1
+  instance_type = var.instance_type
+  ami_id = data.aws_ami.amzn2_ami.id
+  sg_groups = [module.aws_security_group_internal_vpc.security_group_id, module.aws_security_group_http.security_group_id]
+  subnet_id = module.aws_private_subnet_c.subnet_id
+  key_name = var.key_name
 
+  user_data = <<EOF
+    #!/bin/bash
+    echo "Inatall Nginx"
+    sudo amazon-linux-extras install nginx1
+
+    echo "Enable Systemctl"
+    sudo systemctl enable nginx
+    sudo systemctl start nginx
+  EOF
+
+  tag_name = {
+    Name = "${var.context.project}-Web"
+    ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
+  }
+}
 ## Security Group
 module "aws_security_group_ssh" {
-  source = "../modules/sercurity_group/cidr"
+  source = "../modules/sercurity_group"
   vpc_id = module.aws_vpc.vpc_id
   cidr_blocks = ["165.225.228.0/23"]
   from_port = 22
@@ -162,7 +197,7 @@ module "aws_security_group_ssh" {
   }
 }
 module "aws_security_group_http" {
-  source = "../modules/sercurity_group/cidr"
+  source = "../modules/sercurity_group"
   vpc_id = module.aws_vpc.vpc_id
   cidr_blocks = ["0.0.0.0/0"]
   from_port = 80
@@ -173,16 +208,17 @@ module "aws_security_group_http" {
     Distributor = "${var.context.distributor}"
   }
 }
-module "aws_security_group_bastion_source" {
-  source = "../modules/sercurity_group/sg_source"
+module "aws_security_group_internal_vpc" {
+  source = "../modules/sercurity_group"
   vpc_id = module.aws_vpc.vpc_id
-  source_security_group_id = module.aws_security_group_ssh.security_group_id
+  cidr_blocks = ["10.10.0.0/16"]
   from_port = 22
   to_port = 22
   tag_name = {
-    Name = "${var.context.project}-Bastion-SG"
+    Name = "${var.context.project}-VPC-SG"
     ENV = "${var.context.env}"
     Distributor = "${var.context.distributor}"
   }
 }
+
 ## ELB

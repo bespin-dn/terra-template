@@ -22,6 +22,10 @@ variable "key_name" {
   type = string
 }
 
+variable "user_data" {
+  type = string
+}
+
 variable "tag_name" {
     description = "A mapping of tags"
     type = map(string)

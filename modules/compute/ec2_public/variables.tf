@@ -18,7 +18,7 @@ variable "subnet_id" {
   type = string
 }
 
-variable "pubblic_access" {
+variable "public_access" {
   type = bool
   default = false
 }

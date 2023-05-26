@@ -10,4 +10,4 @@ context = {
 
 vpc_cidr = "10.10"
 instance_type = "t3.micro"
-key_name = "GSKey"
+key_name = "GS-Key"
