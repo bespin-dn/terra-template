@@ -121,7 +121,7 @@ resource "aws_route_table_association" "to-private-c" {
 ## EC2
 # Bastion Host
 module "aws_ec2_bastion" {
-  source = "../terraform/module/compute/ec2_bastion"
+  source = "../module/compute/ec2_bastion"
   ami_id = data.aws_ami.amzn2_ami
   sg_groups = [module.aws_security_group_ssh.security_group_id]
   subnet_id = module.aws_public_subnet_a.subnet_id
@@ -134,7 +134,7 @@ module "aws_ec2_bastion" {
   }
 }
 module "aws_ec2_web" {
-  source = "../terraform/module/compute/ec2_private"
+  source = "../module/compute/ec2_private"
   instance_count = 2
   instance_type = var.instance_type
   ami_id = data.aws_ami.amzn2_ami
