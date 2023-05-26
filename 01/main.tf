@@ -122,7 +122,30 @@ resource "aws_route_table_association" "to-private-c" {
 # Bastion Host
 module "aws_ec2_bastion" {
   source = "../terraform/module/compute/ec2_bastion"
-  ## <---여기부터 시작---> 
+  ami_id = data.aws_ami.amzn2_ami
+  sg_groups = [module.aws_security_group_ssh.security_group_id]
+  subnet_id = module.aws_public_subnet_a.subnet_id
+  key_name = var.key_name
+  public_access = true
+  tag_name = {
+    Name = "${var.context.project}-BastionHost"
+    ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
+  }
+}
+module "aws_ec2_web" {
+  source = "../terraform/module/compute/ec2_private"
+  instance_count = 2
+  instance_type = var.instance_type
+  ami_id = data.aws_ami.amzn2_ami
+  sg_groups = [module.aws_security_group_bastion.security_group_id]
+  subnet_id = module.aws_private_subnet_a.subnet_id
+  key_name = var.key_name
+  tag_name = {
+    Name = "${var.context.project}-Web"
+    ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
+  }
 }
 
 ## Security Group
@@ -146,6 +169,18 @@ module "aws_security_group_http" {
   to_port = 80
   tag_name = {
     Name = "${var.context.project}-HTTP-SG"
+    ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
+  }
+}
+module "aws_security_group_bastion" {
+  source = "../modules/sercurity_group"
+  vpc_id = module.aws_vpc.vpc_id
+  source_security_group_id = module.aws_security_group_ssh.security_group_id
+  from_port = 22
+  to_port = 22
+  tag_name = {
+    Name = "${var.context.project}-Bastion-SG"
     ENV = "${var.context.env}"
     Distributor = "${var.context.distributor}"
   }
