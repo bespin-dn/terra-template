@@ -138,7 +138,7 @@ module "aws_ec2_web" {
   instance_count = 2
   instance_type = var.instance_type
   ami_id = data.aws_ami.amzn2_ami
-  sg_groups = [module.aws_security_group_bastion.security_group_id]
+  sg_groups = [module.aws_security_group_bastion_source.security_group_id]
   subnet_id = module.aws_private_subnet_a.subnet_id
   key_name = var.key_name
   tag_name = {
@@ -150,7 +150,7 @@ module "aws_ec2_web" {
 
 ## Security Group
 module "aws_security_group_ssh" {
-  source = "../modules/sercurity_group"
+  source = "../modules/sercurity_group/cidr"
   vpc_id = module.aws_vpc.vpc_id
   cidr_blocks = ["165.225.228.0/23"]
   from_port = 22
@@ -162,7 +162,7 @@ module "aws_security_group_ssh" {
   }
 }
 module "aws_security_group_http" {
-  source = "../modules/sercurity_group"
+  source = "../modules/sercurity_group/cidr"
   vpc_id = module.aws_vpc.vpc_id
   cidr_blocks = ["0.0.0.0/0"]
   from_port = 80
@@ -173,8 +173,8 @@ module "aws_security_group_http" {
     Distributor = "${var.context.distributor}"
   }
 }
-module "aws_security_group_bastion" {
-  source = "../modules/sercurity_group"
+module "aws_security_group_bastion_source" {
+  source = "../modules/sercurity_group/sg_source"
   vpc_id = module.aws_vpc.vpc_id
   source_security_group_id = module.aws_security_group_ssh.security_group_id
   from_port = 22
