@@ -3,5 +3,4 @@
 *modules.json
 .terraform*
 terraform.tfstate*
-*.bkp
-*.drawio
+.$Sample_Architecture.drawio.bkp
