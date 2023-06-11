@@ -1,6 +1,6 @@
 Architecture
 =============
-![Alt text](./01.png)
+![Alt text](./02.png)
 
 Resource
 -----
@@ -9,12 +9,13 @@ Resource
 * EC2
 * ELB
 * Security Group
+* RDS
 
 Usage
 =============
 ### 1. Git Clone
 ```bash
-$ cd terra-template/01
+$ cd terra-template/02
 ```
 ### 2. Configuration
 **terrform.tfvar** 내 설정 확인 및 알맞게 수정
@@ -31,6 +32,7 @@ context = {
 
 vpc_cide = "10.10"
 instance_type = <Web Instance Type>
+rds_type = <RDS Instance Type>
 key_name = <Key Pair 이름>
 ```
 
