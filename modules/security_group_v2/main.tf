@@ -1,7 +1,8 @@
 resource "aws_security_group" "default_sg" {
+  name = var.name
   vpc_id = var.vpc_id
   ingress {
-    cidr_blocks = [ element(var.cidr_blocks[*], length(var.cidr_blocks)) ]
+    security_groups = [ element(var.security_groups[*], length(var.security_groups)) ]
     from_port = var.from_port
     to_port = var.to_port
     protocol = "tcp"

@@ -1,4 +1,4 @@
-resource "aws_subnet" "default-subnet" {
+resource "aws_subnet" "default_subnet" {
     vpc_id = var.vpc_id
     map_public_ip_on_launch = var.is_public
     cidr_block = var.cidr_block

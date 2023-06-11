@@ -123,7 +123,7 @@ resource "aws_route_table_association" "to-private-c" {
 module "aws_ec2_bastion" {
   source = "../modules/compute/ec2_bastion"
   ami_id = data.aws_ami.amzn2_ami.id
-  sg_groups = [module.aws_security_group_ssh.security_group_id]
+  sg_groups = [module.aws_security_group_ssh.sg_id]
   subnet_id = module.aws_public_subnet_a.subnet_id
   key_name = var.key_name
   public_access = true
@@ -135,10 +135,9 @@ module "aws_ec2_bastion" {
 }
 module "aws_ec2_web_a" {
   source = "../modules/compute/ec2_private"
-  instance_count = 1
   instance_type = var.instance_type
   ami_id = data.aws_ami.amzn2_ami.id
-  sg_groups = [module.aws_security_group_internal_vpc.security_group_id, module.aws_security_group_http.security_group_id]
+  sg_groups = [module.aws_security_group_internal_vpc.sg_id, module.aws_security_group_http.sg_id]
   subnet_id = module.aws_private_subnet_a.subnet_id
   key_name = var.key_name
 
@@ -160,10 +159,9 @@ module "aws_ec2_web_a" {
 }
 module "aws_ec2_web_c" {
   source = "../modules/compute/ec2_private"
-  instance_count = 1
   instance_type = var.instance_type
   ami_id = data.aws_ami.amzn2_ami.id
-  sg_groups = [module.aws_security_group_internal_vpc.security_group_id, module.aws_security_group_http.security_group_id]
+  sg_groups = [module.aws_security_group_internal_vpc.sg_id, module.aws_security_group_http.sg_id]
   subnet_id = module.aws_private_subnet_c.subnet_id
   key_name = var.key_name
 
@@ -185,7 +183,8 @@ module "aws_ec2_web_c" {
 }
 ## Security Group
 module "aws_security_group_ssh" {
-  source = "../modules/sercurity_group"
+  source = "../modules/security_group"
+  name = "${var.context.project}-SSH-SG"
   vpc_id = module.aws_vpc.vpc_id
   cidr_blocks = ["165.225.228.0/23"]
   from_port = 22
@@ -197,28 +196,61 @@ module "aws_security_group_ssh" {
   }
 }
 module "aws_security_group_http" {
-  source = "../modules/sercurity_group"
+  source = "../modules/security_group_v2"
+  name = "${var.context.project}-HTTP-SG"
   vpc_id = module.aws_vpc.vpc_id
-  cidr_blocks = ["0.0.0.0/0"]
+  security_groups = [module.aws_security_group_http_lb.sg_id]
   from_port = 80
   to_port = 80
   tag_name = {
-    Name = "${var.context.project}-HTTP-SG"
+    Name = "${var.context.project}-ALB-SG"
     ENV = "${var.context.env}"
     Distributor = "${var.context.distributor}"
   }
 }
 module "aws_security_group_internal_vpc" {
-  source = "../modules/sercurity_group"
+  source = "../modules/security_group"
+  name = "${var.context.project}-INTERNAL-SG"
   vpc_id = module.aws_vpc.vpc_id
   cidr_blocks = ["10.10.0.0/16"]
   from_port = 22
   to_port = 22
   tag_name = {
-    Name = "${var.context.project}-VPC-SG"
+    Name = "${var.context.project}-INTERNAL-SG"
     ENV = "${var.context.env}"
     Distributor = "${var.context.distributor}"
   }
 }
 
 ## ELB
+module "aws_security_group_http_lb" {
+  source = "../modules/security_group"
+  name = "${var.context.project}-ALB-SG"
+  vpc_id = module.aws_vpc.vpc_id
+  cidr_blocks = ["0.0.0.0/0"]
+  from_port = 80
+  to_port = 80
+  tag_name = {
+    Name = "${var.context.project}-ALB-SG"
+    ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
+  }
+}
+
+module "aws_http_alb" {
+  source = "../modules/network/load_balancer"
+  name = "${var.context.project}-ALB"
+  vpc_id = module.aws_vpc.vpc_id
+  lb_type = "application"
+  ec2_a_id = module.aws_ec2_web_a.ec2_id
+  ec2_c_id = module.aws_ec2_web_c.ec2_id
+  public_subnet_a_id = module.aws_public_subnet_a.subnet_id
+  public_subnet_c_id = module.aws_public_subnet_c.subnet_id
+  alb_sg_id = module.aws_security_group_http.sg_id
+  tag_name = {
+    Name = "${var.context.project}-ALB"
+    ENV = "${var.context.env}"
+    Distributor = "${var.context.distributor}"
+  }
+
+}
